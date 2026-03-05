@@ -33,7 +33,7 @@ This repository is designed for:
 ---
 
 ## Repository Structure
----
+```
 splunk-ir-playbook
 │
 ├── README.md
@@ -61,5 +61,4 @@ splunk-ir-playbook
 │
 └── timeline-analysis
     └── building_attack_timeline.md
-
-    ---
+```

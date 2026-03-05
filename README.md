@@ -33,3 +33,33 @@ This repository is designed for:
 ---
 
 ## Repository Structure
+
+splunk-ir-playbook
+│
+├── README.md
+│
+├── investigation-playbooks
+│   ├── compromised_host.md
+│   ├── suspicious_powershell.md
+│   ├── lateral_movement.md
+│   └── ransomware_investigation.md
+│
+├── splunk-detections
+│   ├── encoded_powershell.md
+│   ├── suspicious_service_creation.md
+│   ├── unusual_parent_child.md
+│
+├── threat-hunting
+│   ├── sysmon_hunts.md
+│   ├── persistence_hunting.md
+│   ├── credential_access.md
+│
+├── splunk-queries
+│   ├── sysmon_queries.md
+│   ├── authentication_queries.md
+│   └── network_queries.md
+│
+└── timeline-analysis
+    └── building_attack_timeline.md
+
+    ---

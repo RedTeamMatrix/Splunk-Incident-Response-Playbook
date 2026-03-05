@@ -1,0 +1,25 @@
+# Investigation Playbooks
+
+This section contains step-by-step investigation workflows for common security incidents.
+
+The goal of these playbooks is to help analysts move from an initial alert to a full understanding of attacker activity, including root cause, scope of compromise, and persistence mechanisms.
+
+Each playbook focuses on practical investigative techniques using Splunk.
+
+## Playbooks
+
+### Compromised Host Investigation
+
+Steps for investigating a potentially compromised endpoint, including process execution analysis, network activity correlation, and persistence checks.
+
+### Suspicious PowerShell Activity
+
+Investigating potentially malicious PowerShell execution, including encoded commands, download activity, and unusual parent processes.
+
+### Lateral Movement Investigation
+
+Identifying attacker movement between systems through authentication events, remote execution tools, and abnormal process activity.
+
+### Ransomware Investigation
+
+Investigating early indicators of ransomware activity, including suspicious file operations, mass file modifications, and abnormal process behavior.

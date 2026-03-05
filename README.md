@@ -33,7 +33,7 @@ This repository is designed for:
 ---
 
 ## Repository Structure
-
+---
 splunk-ir-playbook
 │
 ├── README.md

